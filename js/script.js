@@ -7,7 +7,11 @@ const repoList = document.querySelector('.repo-list');
 //  store repo-data section
 let repoData = document.querySelector('.repo-data');
 //  store where repo info appears
-const repos = document.querySelector('.repos');
+let repos = document.querySelector('.repos');
+// variable to store the back to repo button
+const backButton = document.querySelector('.view-repos');
+// variable to to select search by input
+const filterInput = document.querySelector('.filter-repos');
 
 
 
@@ -61,6 +65,8 @@ const getRepoData = function (repos) {
         createRepoList.innerHTML = `<h3>${repo.name}`; 
         // append list items to ul
         repoList.append(createRepoList);
+        // show the seach bar
+        filterInput.classList.remove('hide');
     }
 
 }
@@ -84,28 +90,86 @@ const getRepoInfo = async function (repoName) {
     console.log(repoInfo);
     // create an array of languages
     const fetchLanguages = await fetch(`https://api.github.com/repos/${userName}/${repoName}/languages`);
+    // variable to store found languages
     const languageData = await fetchLanguages.json();
-    console.log(languageData)
+    // empty array to store languages in
     let languages = [];
+    // loop to go through all languages
     for (let language in languageData){
         languages.push(language);
-        console.log(languages)
-        // console.log(language, languageData[language])
     }
+    // call function that displays repo info in div.
     displayRepoInfo(repoInfo, languages)
 }
 
 const displayRepoInfo = function (repoInfo, languages) {
+    // empty html 
     repoData.innerHTML = '';
+    // variable creating new div
     const newRepoDiv = document.createElement('div');
-    
+    // html to be stored in the div
     newRepoDiv.innerHTML = `
     <h3>Name: ${repoInfo.name}</h3>
     <p>Description: ${repoInfo.description}</p>
     <p>Default Branch: ${repoInfo.default_branch}</p>
     <p>Languages: ${languages.join(", ")}</p>
     <a class="visit" href="${repoInfo.url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>`;
+    // add the div to the repo data element
     repoData.append(newRepoDiv);
+    // remove hide so it appears
     repoData.classList.remove('hide');
+    // hide repo list
     repos.classList.add('hide');
+    // remove the back button from hidden view
+    backButton.classList.remove('hide');
 }
+
+// click even to the back to repos button
+backButton.addEventListener('click', function () {
+    // return back to main display
+    repos.classList.remove('hide');
+    // remove individual repo data
+    repoData.classList.add('hide');
+    // re-hide the back to repo button
+    backButton.classList.add('hide');
+})
+
+filterInput.addEventListener('input', function(e) {
+    // variable to store the input of search bar
+    const searchText = e.target.value;
+    // variable to select all repos
+    const allRepo = document.querySelectorAll('li'); 
+    // set search text to lower case
+    const lowerSearch = searchText.toLowerCase();
+    // loop through li objects to see if any dont match
+    for (let repo of allRepo) {
+        // store name of repo inner text
+        let name = repo.innerText;
+        // if it doesnt contain inner text - dynamic value
+        if(!`${name}`.includes(lowerSearch)) {
+            repo.classList.add('hide')
+            // remove hide attribute when deleting search
+        } else {
+            repo.classList.remove('hide');
+        }
+    }
+})
+
+// ---------------------------------------------
+// -------SKILCRUSH WAY -----------------------
+// --------------------------------------------
+// // Dynamic search
+// filterInput.addEventListener("input", function (e) {
+//     const searchText = e.target.value;
+//     const repos = document.querySelectorAll(".repo");
+//     const searchLowerText = searchText.toLowerCase();
+  
+//     for (const repo of repos) {
+//       const repoLowerText = repo.innerText.toLowerCase();
+//       if (repoLowerText.includes(searchLowerText)) {
+//         repo.classList.remove("hide");
+//       } else {
+//         repo.classList.add("hide");
+//       }
+//     }
+//   });
